@@ -19,7 +19,7 @@ jobs:
     - name: Get git short hash
       id: shorthash
       run: |
-        echo "::set-output name=shorthash::$(git rev-parse --short HEAD)"
+        echo "shorthash=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
     
     - name: Login to GH container registry
       uses: docker/login-action@v3
