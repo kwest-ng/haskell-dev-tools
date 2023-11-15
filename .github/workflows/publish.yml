@@ -22,11 +22,11 @@ jobs:
         echo "::set-output name=shorthash::$(git rev-parse --short HEAD)"
     
     - name: Login to GH container registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v3
       with:
         registry: ghcr.io
-        username: ${{ github.user  }}
-        password: ${{ github.token }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
@@ -48,7 +48,10 @@ jobs:
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-    - # Temp fix
+    - # Hack fix until these issues are resolved
+      # This prevents the cache from growing too large, which causes early
+      # evictions and therefore cache misses. This is mostly to prevent long
+      # build times when the last change is not a new tool install.
       # https://github.com/docker/build-push-action/issues/252
       # https://github.com/moby/buildkit/issues/1896
       name: Move cache
