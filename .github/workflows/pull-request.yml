@@ -1,0 +1,92 @@
+# Test PR:
+# - Run shellcheck
+# - Run markdownlint
+# - Run Docker lint (using hadolint)
+# - Build docker image
+name: Test PR
+on:
+  pull_request
+
+jobs:
+  markdown-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: install markdownlint tool
+      run: sudo gem install mdl
+
+    - name: run markdown linter
+      run: |
+        mdl $(find . -name '*.md')
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: run shellcheck
+      run: shellcheck **/*.*sh
+  
+  docker-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: run docker lint
+      run: |
+        docker run --rm -i ghcr.io/hadolint/hadolint < src/Dockerfile
+
+  test-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Get git short hash
+      id: shorthash
+      run: |
+        echo "::set-output name=shorthash::$(git rev-parse --short HEAD)"    
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: ./src
+        push: false
+        tags: ${{ format('haskell-dev-tools-test:{0}', steps.shorthash.outputs.shorthash) }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+    - # Hack fix until these issues are resolved
+      # This prevents the cache from growing too large, which causes early
+      # evictions and therefore cache misses. This is mostly to prevent long
+      # build times when the last change is not a new tool install.
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      name: Move cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache

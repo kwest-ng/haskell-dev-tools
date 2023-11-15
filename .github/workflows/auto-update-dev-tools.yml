@@ -1,0 +1,45 @@
+# On a schedule, this workflow checks whether new tool versions have been
+# released. If so, this workflow runs `update-dev-tools.sh`, which updates the
+# tool versions in the Dockerfile. It then opens and auto-merges an update PR.
+name: dev-tools update
+on:
+  # schedule:
+    # run once, each monday, at 4AM PST (UTC-8:00)
+    # - cron: '0 12 * * 1'
+  workflow_dispatch:
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: update dockerfiles
+        run: src/update-dev-tools.sh
+
+      - name: run diff
+        run: git diff
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v3
+        id: create-pr
+        with:
+          title: '[Auto] Update hlint and fourmolu image'
+          body: 'This PR will merge automatically if its checks complete.  Have no fear.'
+          branch: auto/update-image
+          # Github won't run actions when triggered by a github token, intentional limitation.
+          # Their workaround is to use personal tokens, we have one exclusively for this purpose.
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+
+      - name: Enable auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v1
+        if: steps.create-pr.outputs.pull-request-operation == 'created'
+        with:
+          # Same reason as above
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+          merge-method: squash
+          pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
