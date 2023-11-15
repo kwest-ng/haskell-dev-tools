@@ -1,6 +1,6 @@
 # haskell-dev-tools
 
-_copied from fossas/haskell-dev-tools_
+This repository is copied (not forked) from fossas/haskell-dev-tools.
 
 This repo serves two purposes:
 
@@ -16,9 +16,9 @@ publicly available, since there's no secrets or magic, and it makes docker auth
 easier in spectrometer's CI. On that note, the code in this repo is released
 warranty-free into the public domain, under [The Unlicense](LICENSE).
 
-The image is published as `ghcr.io/kwest-ng/haskell-dev-tools:{version}-{hash}`, where
-`version` is the GHC compiler version we target, and `hash` is the git hash of the
-commit used to build the image.
+The image is published as `ghcr.io/kwest-ng/haskell-dev-tools:{version}-{hash}`,
+where `version` is the GHC compiler version we target, and `hash` is the git
+hash of the commit used to build the image.
 
 ## Updating the container
 
