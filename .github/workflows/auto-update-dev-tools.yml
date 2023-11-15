@@ -16,7 +16,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: update dockerfiles
         run: src/update-dev-tools.sh
@@ -25,7 +25,7 @@ jobs:
         run: git diff
 
       - name: Create PR
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v5
         id: create-pr
         with:
           title: '[Auto] Update hlint and fourmolu image'
