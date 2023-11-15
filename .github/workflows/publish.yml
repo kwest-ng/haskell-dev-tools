@@ -42,7 +42,9 @@ jobs:
     - name: Build and push image
       uses: docker/build-push-action@v2
       with:
-        tags: ${{ format('ghcr.io/fossas/haskell-dev-tools:9.4.7-{0}', steps.shorthash.outputs.shorthash) }}
+        tags: |
+          ${{ format('ghcr.io/kwest-ng/haskell-dev-tools:9.4.7-{0}', steps.shorthash.outputs.shorthash) }}
+          ghcr.io/kwest-ng/haskell-dev-tools:9.4.7-latest
         push: true
         context: ./src
         cache-from: type=local,src=/tmp/.buildx-cache
