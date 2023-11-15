@@ -14,7 +14,7 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Get git short hash
       id: shorthash
@@ -29,10 +29,10 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v3
 
     - name: Cache Docker layers
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx-
@@ -40,7 +40,7 @@ jobs:
           ${{ runner.os }}-buildx-
 
     - name: Build and push image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v5
       with:
         tags: |
           ${{ format('ghcr.io/kwest-ng/haskell-dev-tools:9.4.7-{0}', steps.shorthash.outputs.shorthash) }}
